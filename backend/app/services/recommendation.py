@@ -26,8 +26,11 @@ from app.models.user import User
 
 
 def _is_yes(value: Optional[str]) -> bool:
-    """判断字段值是否为"是" —— 数据库中用"是/否"字符串表示布尔"""
-    return value is not None and value.strip() == "是"
+    """判断字段值是否为"是" —— 兼容 '是'/'1' 两种取值格式"""
+    if value is None:
+        return False
+    v = value.strip()
+    return v == "是" or v == "1"
 
 
 def calculate_recommendation(

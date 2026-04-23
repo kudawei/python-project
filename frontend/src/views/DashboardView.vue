@@ -5,20 +5,20 @@
     <!-- 顶部概览卡片 -->
     <div class="overview-row">
       <el-card v-for="card in overviewCards" :key="card.label" shadow="hover" class="overview-card">
-        <div class="overview-value">{{ card.value }}</div>
+        <div class="overview-value" :style="{ color: card.color }">{{ card.value.toLocaleString() }}</div>
         <div class="overview-label">{{ card.label }}</div>
       </el-card>
     </div>
 
-    <!-- 第一行图表：门类院校分布 + 双一流占比 + 学位类型分布 -->
+    <!-- 第一行：省市院校分布 + 重点院校占比 + 学位类型 -->
     <div class="chart-row">
       <el-card shadow="never" class="chart-card chart-card-lg">
-        <template #header><h4>各门类院校数量分布</h4></template>
-        <v-chart :option="categoryUniOption" autoresize class="chart" />
+        <template #header><h4>各省市院校数量分布</h4></template>
+        <v-chart :option="provinceUniOption" autoresize class="chart" />
       </el-card>
       <el-card shadow="never" class="chart-card chart-card-sm">
-        <template #header><h4>双一流院校占比</h4></template>
-        <v-chart :option="sylRatioOption" autoresize class="chart" />
+        <template #header><h4>重点院校分类占比</h4></template>
+        <v-chart :option="eliteRatioOption" autoresize class="chart" />
       </el-card>
       <el-card shadow="never" class="chart-card chart-card-sm">
         <template #header><h4>学位类型分布</h4></template>
@@ -26,35 +26,35 @@
       </el-card>
     </div>
 
-    <!-- 第二行图表：省市院校分布 + 学习方式分布 + 自划线对比 -->
+    <!-- 第二行：门类招生方向 + 学习方式 + 自划线院校专业数 -->
     <div class="chart-row">
       <el-card shadow="never" class="chart-card chart-card-lg">
-        <template #header><h4>各省市院校数量分布</h4></template>
-        <v-chart :option="provinceUniOption" autoresize class="chart" />
+        <template #header><h4>各门类招生方向数量分布</h4></template>
+        <v-chart :option="categoryDirOption" autoresize class="chart" />
       </el-card>
       <el-card shadow="never" class="chart-card chart-card-sm">
         <template #header><h4>学习方式分布</h4></template>
         <v-chart :option="studyModeOption" autoresize class="chart" />
       </el-card>
       <el-card shadow="never" class="chart-card chart-card-sm">
-        <template #header><h4>自划线 vs 非自划线院校</h4></template>
-        <v-chart :option="zhxCompareOption" autoresize class="chart" />
+        <template #header><h4>自划线院校招生专业数 TOP15</h4></template>
+        <v-chart :option="zhxMajorOption" autoresize class="chart" />
       </el-card>
     </div>
 
-    <!-- 第三行图表：门类专业TOP10 + 博士点省市分布 -->
+    <!-- 第三行：省市招生人数 + 推免占比 TOP15 -->
     <div class="chart-row">
       <el-card shadow="never" class="chart-card chart-card-md">
-        <template #header><h4>各门类专业数量 TOP10</h4></template>
-        <v-chart :option="majorTop10Option" autoresize class="chart" />
+        <template #header><h4>各省市拟招生总人数</h4></template>
+        <v-chart :option="provinceEnrollOption" autoresize class="chart" />
       </el-card>
       <el-card shadow="never" class="chart-card chart-card-md">
-        <template #header><h4>博士点院校省市分布</h4></template>
-        <v-chart :option="bsProvinceOption" autoresize class="chart" />
+        <template #header><h4>院校推免占比 TOP15</h4></template>
+        <v-chart :option="tuimianOption" autoresize class="chart" />
       </el-card>
     </div>
 
-    <!-- 第四行图表：K-Means 聚类分析（数据分析算法） -->
+    <!-- 第四行：K-Means 聚类分析 -->
     <div class="chart-row">
       <el-card shadow="never" class="chart-card chart-card-full">
         <template #header>
@@ -63,20 +63,22 @@
             <el-tag type="danger" size="small">数据分析算法</el-tag>
           </div>
           <p class="algo-desc">
-            基于 K-Means 聚类算法，从招生专业数、双一流、自划线、博士点四个维度对院校进行竞争力分级
+            基于 K-Means 聚类算法，从招生专业数、招生人数、双一流、985、211、自划线、博士点七个维度对院校进行竞争力分级
           </p>
         </template>
         <div class="cluster-content">
           <v-chart :option="clusterOption" autoresize class="chart chart-tall" />
-          <!-- 聚类中心统计表 -->
           <div v-if="clusterCenters.length > 0" class="cluster-table">
             <h5>聚类中心特征</h5>
             <el-table :data="clusterCenters" border size="small" style="width: 100%">
               <el-table-column prop="tier" label="竞争力等级" width="120" />
-              <el-table-column prop="major_count_avg" label="平均专业数" width="110" />
-              <el-table-column prop="syl_ratio" label="双一流比例" width="110" />
-              <el-table-column prop="zhx_ratio" label="自划线比例" width="110" />
-              <el-table-column prop="bs_ratio" label="博士点比例" width="110" />
+              <el-table-column prop="major_count_avg" label="平均专业数" width="100" />
+              <el-table-column prop="enrollment_avg" label="平均招生数" width="100" />
+              <el-table-column prop="syl_ratio" label="双一流比例" width="100" />
+              <el-table-column prop="b985_ratio" label="985比例" width="90" />
+              <el-table-column prop="b211_ratio" label="211比例" width="90" />
+              <el-table-column prop="zhx_ratio" label="自划线比例" width="100" />
+              <el-table-column prop="bs_ratio" label="博士点比例" width="100" />
             </el-table>
           </div>
         </div>
@@ -89,14 +91,14 @@
 /**
  * 数据看板页面
  * 包含 9 个统计图表：
- * 1. 各门类院校数量分布（柱状图）
- * 2. 双一流院校占比（饼图）
+ * 1. 各省市院校数量分布（柱状图）
+ * 2. 重点院校分类占比 - 双一流/985/211（饼图）
  * 3. 学位类型分布（饼图）
- * 4. 各省市院校数量分布（柱状图）
+ * 4. 各门类招生方向数量分布（柱状图）
  * 5. 学习方式分布（饼图）
- * 6. 自划线 vs 非自划线院校对比（分组柱状图）
- * 7. 各门类专业数量 TOP10（横向条形图）
- * 8. 博士点院校省市分布（柱状图）
+ * 6. 自划线院校招生专业数 TOP15（横向条形图）
+ * 7. 各省市拟招生总人数（柱状图）
+ * 8. 院校推免占比 TOP15（柱状图）
  * 9. 院校竞争力聚类分析 —— K-Means 算法（散点图）
  */
 import { ref, onMounted } from 'vue'
@@ -113,14 +115,14 @@ import {
 } from 'echarts/components'
 import {
   getOverviewApi,
-  getCategoryUniversityCountApi,
   getProvinceUniversityCountApi,
-  getSylRatioApi,
+  getEliteUniversityRatioApi,
   getDegreeTypeDistributionApi,
   getStudyModeDistributionApi,
-  getZhxComparisonApi,
-  getCategoryMajorTop10Api,
-  getBsProvinceDistributionApi,
+  getZhxUniversityMajorCountApi,
+  getCategoryDirectionCountApi,
+  getProvinceEnrollmentApi,
+  getUniversityTuimianRatioApi,
   getUniversityClusterAnalysisApi,
 } from '@/api/dashboard'
 
@@ -141,48 +143,38 @@ const loading = ref(true)
 
 // ===== 概览数据 =====
 const overviewCards = ref([
-  { label: '院校总数', value: 0 },
-  { label: '专业总数', value: 0 },
-  { label: '门类数量', value: 0 },
-  { label: '覆盖省市', value: 0 },
-  { label: '双一流院校', value: 0 },
+  { label: '数据总量', value: 0, color: '#e6a23c' },
+  { label: '院校总数', value: 0, color: '#409eff' },
+  { label: '专业总数', value: 0, color: '#67c23a' },
+  { label: '门类数量', value: 0, color: '#909399' },
+  { label: '覆盖省市', value: 0, color: '#f56c6c' },
+  { label: '双一流院校', value: 0, color: '#e6a23c' },
 ])
 
-// ===== 图表1：各门类院校数量分布 =====
-const categoryUniOption = ref({})
-// ===== 图表2：双一流占比 =====
-const sylRatioOption = ref({})
-// ===== 图表3：学位类型分布 =====
-const degreeTypeOption = ref({})
-// ===== 图表4：省市院校分布 =====
+// ===== 各图表配置 =====
 const provinceUniOption = ref({})
-// ===== 图表5：学习方式分布 =====
+const eliteRatioOption = ref({})
+const degreeTypeOption = ref({})
+const categoryDirOption = ref({})
 const studyModeOption = ref({})
-// ===== 图表6：自划线对比 =====
-const zhxCompareOption = ref({})
-// ===== 图表7：门类专业 TOP10 =====
-const majorTop10Option = ref({})
-// ===== 图表8：博士点省市分布 =====
-const bsProvinceOption = ref({})
-// ===== 图表9：聚类分析 =====
+const zhxMajorOption = ref({})
+const provinceEnrollOption = ref({})
+const tuimianOption = ref({})
 const clusterOption = ref({})
 const clusterCenters = ref<any[]>([])
 
-/** ECharts 配色方案 */
-const colors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
-
 /** 生成柱状图配置 */
-function barOption(categories: string[], values: number[], color = '#5470c6') {
+function barOption(categories: string[], values: number[], color = '#5470c6', hasZoom = false) {
   return {
     tooltip: { trigger: 'axis' },
-    grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
+    grid: { left: '3%', right: '4%', bottom: hasZoom ? '15%' : '10%', containLabel: true },
     xAxis: {
       type: 'category',
       data: categories,
       axisLabel: { rotate: 30, fontSize: 11 },
     },
     yAxis: { type: 'value' },
-    dataZoom: categories.length > 15 ? [{ type: 'slider', bottom: 0 }] : [],
+    dataZoom: hasZoom ? [{ type: 'slider', bottom: 0 }] : [],
     series: [{
       type: 'bar',
       data: values,
@@ -211,105 +203,127 @@ function pieOption(items: { name: string; value: number }[]) {
 
 onMounted(async () => {
   try {
-    // 并行请求所有数据
     const [
       overviewRes,
-      catUniRes,
       provUniRes,
-      sylRes,
+      eliteRes,
       degreeRes,
       studyRes,
       zhxRes,
-      top10Res,
-      bsProvRes,
+      catDirRes,
+      provEnrollRes,
+      tuimianRes,
       clusterRes,
     ] = await Promise.all([
       getOverviewApi(),
-      getCategoryUniversityCountApi(),
       getProvinceUniversityCountApi(),
-      getSylRatioApi(),
+      getEliteUniversityRatioApi(),
       getDegreeTypeDistributionApi(),
       getStudyModeDistributionApi(),
-      getZhxComparisonApi(),
-      getCategoryMajorTop10Api(),
-      getBsProvinceDistributionApi(),
+      getZhxUniversityMajorCountApi(),
+      getCategoryDirectionCountApi(),
+      getProvinceEnrollmentApi(),
+      getUniversityTuimianRatioApi(),
       getUniversityClusterAnalysisApi(),
     ])
 
     // 概览数据
     const ov = overviewRes.data
     overviewCards.value = [
-      { label: '院校总数', value: ov.total_universities },
-      { label: '专业总数', value: ov.total_majors },
-      { label: '门类数量', value: ov.total_categories },
-      { label: '覆盖省市', value: ov.total_provinces },
-      { label: '双一流院校', value: ov.syl_count },
+      { label: '数据总量', value: ov.total_records, color: '#e6a23c' },
+      { label: '院校总数', value: ov.total_universities, color: '#409eff' },
+      { label: '专业总数', value: ov.total_majors, color: '#67c23a' },
+      { label: '门类数量', value: ov.total_categories, color: '#909399' },
+      { label: '覆盖省市', value: ov.total_provinces, color: '#f56c6c' },
+      { label: '双一流院校', value: ov.syl_count, color: '#e6a23c' },
     ]
 
-    // 图表1：门类院校分布
-    const catUni = catUniRes.data
-    categoryUniOption.value = barOption(catUni.categories, catUni.values, '#5470c6')
+    // 图表1：省市院校分布
+    const provUni = provUniRes.data
+    provinceUniOption.value = barOption(provUni.categories, provUni.values, '#5470c6', provUni.categories.length > 15)
 
-    // 图表2：双一流占比
-    sylRatioOption.value = pieOption(sylRes.data.items)
+    // 图表2：重点院校占比
+    eliteRatioOption.value = pieOption(eliteRes.data.items)
 
     // 图表3：学位类型
     degreeTypeOption.value = pieOption(degreeRes.data.items)
 
-    // 图表4：省市院校分布
-    const provUni = provUniRes.data
-    provinceUniOption.value = barOption(provUni.categories, provUni.values, '#91cc75')
+    // 图表4：门类招生方向数量
+    const catDir = catDirRes.data
+    categoryDirOption.value = barOption(catDir.categories, catDir.values, '#91cc75', catDir.categories.length > 10)
 
     // 图表5：学习方式
     studyModeOption.value = pieOption(studyRes.data.items)
 
-    // 图表6：自划线对比（分组柱状图）
+    // 图表6：自划线院校专业数 TOP15（横向条形图）
     const zhx = zhxRes.data
-    zhxCompareOption.value = {
+    zhxMajorOption.value = {
       tooltip: { trigger: 'axis' },
-      legend: { bottom: 0 },
-      grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
-      xAxis: { type: 'category', data: zhx.categories },
-      yAxis: { type: 'value' },
-      series: zhx.series.map((s: any, i: number) => ({
-        name: s.name,
-        type: 'bar',
-        data: s.values,
-        itemStyle: { color: colors[i] },
-      })),
-    }
-
-    // 图表7：门类专业 TOP10（横向条形图）
-    const t10 = top10Res.data
-    majorTop10Option.value = {
-      tooltip: { trigger: 'axis' },
-      grid: { left: '25%', right: '4%', bottom: '3%', containLabel: false },
+      grid: { left: '30%', right: '4%', bottom: '3%', containLabel: false },
       xAxis: { type: 'value' },
       yAxis: {
         type: 'category',
-        data: [...t10.categories].reverse(),
-        axisLabel: { fontSize: 12 },
+        data: [...zhx.categories].reverse(),
+        axisLabel: { fontSize: 11 },
       },
       series: [{
         type: 'bar',
-        data: [...t10.values].reverse(),
+        data: [...zhx.values].reverse(),
         itemStyle: {
           color: {
-            type: 'linear',
-            x: 0, y: 0, x2: 1, y2: 0,
+            type: 'linear', x: 0, y: 0, x2: 1, y2: 0,
             colorStops: [
               { offset: 0, color: '#73c0de' },
               { offset: 1, color: '#5470c6' },
             ],
           },
         },
-        barMaxWidth: 24,
+        barMaxWidth: 20,
       }],
     }
 
-    // 图表8：博士点省市分布
-    const bsProv = bsProvRes.data
-    bsProvinceOption.value = barOption(bsProv.categories, bsProv.values, '#ee6666')
+    // 图表7：省市招生人数
+    const provEnroll = provEnrollRes.data
+    provinceEnrollOption.value = barOption(provEnroll.categories, provEnroll.values, '#fac858', provEnroll.categories.length > 15)
+
+    // 图表8：推免占比 TOP15（双柱图）
+    const tm = tuimianRes.data
+    tuimianOption.value = {
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params: any) => {
+          let s = params[0].name + '<br/>'
+          for (const p of params) {
+            s += `${p.marker} ${p.seriesName}: ${p.value}<br/>`
+          }
+          const idx = params[0].dataIndex
+          s += `推免占比: ${tm.ratio_values[idx]}%`
+          return s
+        },
+      },
+      legend: { bottom: 0 },
+      grid: { left: '3%', right: '4%', bottom: '12%', containLabel: true },
+      xAxis: {
+        type: 'category',
+        data: tm.categories,
+        axisLabel: { rotate: 40, fontSize: 10 },
+      },
+      yAxis: { type: 'value', name: '人数' },
+      series: [
+        {
+          name: '拟招生人数',
+          type: 'bar',
+          data: tm.total_values,
+          itemStyle: { color: '#5470c6' },
+        },
+        {
+          name: '推免人数',
+          type: 'bar',
+          data: tm.tuimian_values,
+          itemStyle: { color: '#ee6666' },
+        },
+      ],
+    }
 
     // 图表9：K-Means 聚类散点图
     const cluster = clusterRes.data
@@ -336,8 +350,10 @@ function buildClusterChart(data: any) {
   for (const item of (data.clusters || [])) {
     const tier = item.tier
     if (seriesMap[tier]) {
+      // X轴：招生专业数，Y轴：拟招生总人数，气泡大小：属性总分
+      const attrScore = item.is_syl + item.is_985 + item.is_211 + item.is_zhx + item.is_bs
       seriesMap[tier].push({
-        value: [item.major_count, item.is_syl + item.is_zhx + item.is_bs],
+        value: [item.major_count, item.enrollment, attrScore * 4 + 8],
         name: item.dwmc,
         itemData: item,
       })
@@ -352,10 +368,10 @@ function buildClusterChart(data: any) {
         if (!d) return params.name
         return `<strong>${d.dwmc}</strong><br/>` +
           `招生专业数: ${d.major_count}<br/>` +
-          `双一流: ${d.is_syl ? '是' : '否'}<br/>` +
-          `自划线: ${d.is_zhx ? '是' : '否'}<br/>` +
-          `博士点: ${d.is_bs ? '是' : '否'}<br/>` +
-          `竞争力等级: ${d.tier}`
+          `拟招生人数: ${d.enrollment}<br/>` +
+          `双一流: ${d.is_syl ? '是' : '否'} | 985: ${d.is_985 ? '是' : '否'} | 211: ${d.is_211 ? '是' : '否'}<br/>` +
+          `自划线: ${d.is_zhx ? '是' : '否'} | 博士点: ${d.is_bs ? '是' : '否'}<br/>` +
+          `竞争力等级: <strong>${d.tier}</strong>`
       },
     },
     legend: { data: labels, bottom: 0 },
@@ -368,16 +384,15 @@ function buildClusterChart(data: any) {
     },
     yAxis: {
       type: 'value',
-      name: '院校属性得分\n(双一流+自划线+博士点)',
+      name: '拟招生总人数',
       nameLocation: 'middle',
-      nameGap: 40,
-      max: 3,
+      nameGap: 50,
     },
     series: labels.map((label: string) => ({
       name: label,
       type: 'scatter',
       data: seriesMap[label] || [],
-      symbolSize: 12,
+      symbolSize: (val: number[]) => val[2] || 10,
       itemStyle: { color: tierColors[label] || '#999' },
     })),
   }
@@ -391,7 +406,6 @@ function buildClusterChart(data: any) {
   gap: 16px;
 }
 
-/* 顶部概览卡片 */
 .overview-row {
   display: flex;
   gap: 16px;
@@ -405,7 +419,6 @@ function buildClusterChart(data: any) {
 .overview-value {
   font-size: 28px;
   font-weight: bold;
-  color: #409eff;
 }
 
 .overview-label {
@@ -414,63 +427,23 @@ function buildClusterChart(data: any) {
   margin-top: 4px;
 }
 
-/* 图表行 */
 .chart-row {
   display: flex;
   gap: 16px;
 }
 
-.chart-card {
-  overflow: hidden;
-}
+.chart-card { overflow: hidden; }
+.chart-card-lg { flex: 2; }
+.chart-card-sm { flex: 1; }
+.chart-card-md { flex: 1; }
+.chart-card-full { flex: 1; }
 
-.chart-card-lg {
-  flex: 2;
-}
+.chart { height: 320px; width: 100%; }
+.chart-tall { height: 400px; }
 
-.chart-card-sm {
-  flex: 1;
-}
+.algo-header { display: flex; align-items: center; gap: 8px; }
+.algo-desc { font-size: 13px; color: #909399; margin-top: 4px; }
 
-.chart-card-md {
-  flex: 1;
-}
-
-.chart-card-full {
-  flex: 1;
-}
-
-.chart {
-  height: 320px;
-  width: 100%;
-}
-
-.chart-tall {
-  height: 400px;
-}
-
-/* 聚类分析区域 */
-.algo-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.algo-desc {
-  font-size: 13px;
-  color: #909399;
-  margin-top: 4px;
-}
-
-.cluster-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.cluster-table h5 {
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: #303133;
-}
+.cluster-content { display: flex; flex-direction: column; gap: 16px; }
+.cluster-table h5 { font-size: 14px; margin-bottom: 8px; color: #303133; }
 </style>

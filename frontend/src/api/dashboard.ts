@@ -9,19 +9,14 @@ export function getOverviewApi() {
   return request.get('/dashboard/overview')
 }
 
-/** 各门类院校数量分布 */
-export function getCategoryUniversityCountApi() {
-  return request.get('/dashboard/category_university_count')
-}
-
 /** 各省市院校数量分布 */
 export function getProvinceUniversityCountApi() {
   return request.get('/dashboard/province_university_count')
 }
 
-/** 双一流院校占比 */
-export function getSylRatioApi() {
-  return request.get('/dashboard/syl_ratio')
+/** 重点院校分类占比（双一流/985/211） */
+export function getEliteUniversityRatioApi() {
+  return request.get('/dashboard/elite_university_ratio')
 }
 
 /** 学位类型分布 */
@@ -34,19 +29,24 @@ export function getStudyModeDistributionApi() {
   return request.get('/dashboard/study_mode_distribution')
 }
 
-/** 自划线与非自划线对比 */
-export function getZhxComparisonApi() {
-  return request.get('/dashboard/zhx_comparison')
+/** 自划线院校招生专业数排名 */
+export function getZhxUniversityMajorCountApi() {
+  return request.get('/dashboard/zhx_university_major_count')
 }
 
-/** 各门类专业数量 TOP10 */
-export function getCategoryMajorTop10Api() {
-  return request.get('/dashboard/category_major_top10')
+/** 各门类招生方向数量分布 */
+export function getCategoryDirectionCountApi() {
+  return request.get('/dashboard/category_direction_count')
 }
 
-/** 博士点院校省市分布 */
-export function getBsProvinceDistributionApi() {
-  return request.get('/dashboard/bs_province_distribution')
+/** 各省市拟招生总人数 */
+export function getProvinceEnrollmentApi() {
+  return request.get('/dashboard/province_enrollment')
+}
+
+/** 院校推免占比排名TOP15 */
+export function getUniversityTuimianRatioApi() {
+  return request.get('/dashboard/university_tuimian_ratio')
 }
 
 /** K-Means 院校竞争力聚类分析 */
