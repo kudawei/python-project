@@ -14,6 +14,10 @@
         text-color="#bfcbd9"
         active-text-color="#409eff"
       >
+        <el-menu-item index="/dashboard">
+          <el-icon><DataBoard /></el-icon>
+          <span>数据看板</span>
+        </el-menu-item>
         <el-menu-item index="/search">
           <el-icon><Search /></el-icon>
           <span>多维检索</span>
@@ -81,6 +85,7 @@ import {
   User,
   ArrowDown,
   School,
+  DataBoard,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 

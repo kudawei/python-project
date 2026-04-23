@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api import auth, search, recommend, workbench
+from app.api import auth, search, recommend, workbench, dashboard
 
 # 导入所有模型以确保 SQLAlchemy 能发现并创建表
 import app.models  # noqa: F401
@@ -34,6 +34,7 @@ app.include_router(auth.router, prefix=settings.API_PREFIX)
 app.include_router(search.router, prefix=settings.API_PREFIX)
 app.include_router(recommend.router, prefix=settings.API_PREFIX)
 app.include_router(workbench.router, prefix=settings.API_PREFIX)
+app.include_router(dashboard.router, prefix=settings.API_PREFIX)
 
 
 @app.on_event("startup")
