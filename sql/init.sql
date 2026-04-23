@@ -151,3 +151,75 @@ CREATE TABLE IF NOT EXISTS `recommend_log` (
   PRIMARY KEY (`id`),
   KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='推荐记录表';
+
+-- ============================================================
+-- 测试数据：用户表
+-- 所有测试用户密码均为: 123456
+-- bcrypt 哈希值: $2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y
+-- ============================================================
+
+INSERT INTO `user` (`username`, `hashed_password`, `nickname`, `email`, `target_mldm`, `target_mlmc`, `target_provinces`, `degree_type`, `study_mode`, `self_rating`, `profile_completed`, `created_at`) VALUES
+-- 用户1：张三，工学，想去北京上海，学术学位，全日制，实力较强
+('zhangsan', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '张三', 'zhangsan@example.com', '08', '工学', '["北京市","上海市"]', 'xs', '1', 'strong', 1, '2025-09-01 08:30:00'),
+
+-- 用户2：李四，管理学，想去广东浙江，专业学位，全日制，实力中等
+('lisi', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '李四', 'lisi@example.com', '12', '管理学', '["广东省","浙江省"]', 'zy', '1', 'medium', 1, '2025-09-05 10:15:00'),
+
+-- 用户3：王五，经济学，想去北京江苏，学术学位，全日制，实力较弱
+('wangwu', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '王五', 'wangwu@example.com', '02', '经济学', '["北京市","江苏省"]', 'xs', '1', 'weak', 1, '2025-09-10 14:00:00'),
+
+-- 用户4：赵六，法学，想去北京，专业学位，非全日制，实力中等
+('zhaoliu', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '赵六', 'zhaoliu@example.com', '03', '法学', '["北京市"]', 'zy', '2', 'medium', 1, '2025-09-15 09:20:00'),
+
+-- 用户5：孙七，教育学，想去湖北四川，学术学位，全日制，实力较强
+('sunqi', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '孙七', 'sunqi@example.com', '04', '教育学', '["湖北省","四川省"]', 'xs', '1', 'strong', 1, '2025-09-20 11:45:00'),
+
+-- 用户6：周八，文学，想去北京上海浙江，学术学位，全日制，实力中等
+('zhouba', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '周八', 'zhouba@example.com', '05', '文学', '["北京市","上海市","浙江省"]', 'xs', '1', 'medium', 1, '2025-10-01 08:00:00'),
+
+-- 用户7：吴九，理学，想去北京天津，学术学位，全日制，实力较强
+('wujiu', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '吴九', 'wujiu@example.com', '07', '理学', '["北京市","天津市"]', 'xs', '1', 'strong', 1, '2025-10-05 13:30:00'),
+
+-- 用户8：郑十，医学，想去上海广东，专业学位，全日制，实力中等
+('zhengshi', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '郑十', 'zhengshi@example.com', '10', '医学', '["上海市","广东省"]', 'zy', '1', 'medium', 1, '2025-10-10 16:00:00'),
+
+-- 用户9：陈一一，艺术学，想去北京四川，学术学位，全日制，实力较弱
+('chenyiyi', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '陈一一', 'chenyiyi@example.com', '13', '艺术学', '["北京市","四川省"]', 'xs', '1', 'weak', 1, '2025-10-15 10:10:00'),
+
+-- 用户10：林二二，哲学，想去北京，学术学位，全日制，实力较强
+('linerer', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '林二二', 'linerer@example.com', '01', '哲学', '["北京市"]', 'xs', '1', 'strong', 1, '2025-10-20 09:00:00'),
+
+-- 用户11：黄三三，历史学，想去上海江苏，学术学位，全日制，实力中等
+('huangss', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '黄三三', 'huangss@example.com', '06', '历史学', '["上海市","江苏省"]', 'xs', '1', 'medium', 1, '2025-10-25 14:30:00'),
+
+-- 用户12：杨四四，农学，想去北京湖北，学术学位，全日制，实力较弱
+('yangss', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '杨四四', 'yangss@example.com', '09', '农学', '["北京市","湖北省"]', 'xs', '1', 'weak', 1, '2025-11-01 08:45:00'),
+
+-- 用户13：刘五五，工学，想去广东深圳，专业学位，非全日制，实力中等
+('liuww', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '刘五五', 'liuww@example.com', '08', '工学', '["广东省"]', 'zy', '2', 'medium', 1, '2025-11-05 11:00:00'),
+
+-- 用户14：何六六，管理学，想去北京上海广东，专业学位，全日制，实力较强
+('helliu', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '何六六', 'helliu@example.com', '12', '管理学', '["北京市","上海市","广东省"]', 'zy', '1', 'strong', 1, '2025-11-10 15:20:00'),
+
+-- 用户15：马七七，经济学，想去浙江江苏，学术学位，全日制，实力中等
+('maqq', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '马七七', 'maqq@example.com', '02', '经济学', '["浙江省","江苏省"]', 'xs', '1', 'medium', 1, '2025-11-15 09:30:00'),
+
+-- 用户16：高八八，法学，想去北京上海，学术学位，全日制，实力较强（画像未完成）
+('gaobb', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '高八八', 'gaobb@example.com', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-20 10:00:00'),
+
+-- 用户17：罗九九，新注册用户（画像未完成）
+('luojj', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '罗九九', 'luojj@example.com', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-25 16:40:00'),
+
+-- 用户18：谢十十，工学，想去天津辽宁，学术学位，全日制，实力较弱
+('xiess', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '谢十十', 'xiess@example.com', '08', '工学', '["天津市","辽宁省"]', 'xs', '1', 'weak', 1, '2025-12-01 08:15:00'),
+
+-- 用户19：韩冬冬，教育学，想去湖南福建，专业学位，全日制，实力中等
+('handd', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '韩冬冬', 'handd@example.com', '04', '教育学', '["湖南省","福建省"]', 'zy', '1', 'medium', 1, '2025-12-05 13:50:00'),
+
+-- 用户20：唐春春，医学，想去北京上海广东四川，专业学位，全日制，实力较强
+('tangcc', '$2b$12$yW/qkJfkPZgW1RGucu2VFe63Skys2.nygToaQlhCxIigPtQtLrS8y', '唐春春', 'tangcc@example.com', '10', '医学', '["北京市","上海市","广东省","四川省"]', 'zy', '1', 'strong', 1, '2025-12-10 10:30:00');
+
+-- 测试用户登录说明：
+-- 所有用户的登录密码均为: 123456
+-- 用户16(高八八)和用户17(罗九九)的画像未完成，可用于测试画像填写流程
+-- 其余用户画像已完成，覆盖了不同的门类、省市、学位类型、学习方式和实力自评组合
