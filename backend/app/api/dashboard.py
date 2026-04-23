@@ -81,13 +81,14 @@ def province_university_count(db: Session = Depends(get_db)):
     }
 
 
-# ==================== 图表2：双一流 / 985 / 211 院校占比（饼图） ====================
+# ==================== 图表2：重点院校数量对比（柱状图） ====================
 
-@router.get("/elite_university_ratio", summary="重点院校分类占比")
+@router.get("/elite_university_ratio", summary="重点院校数量对比")
 def elite_university_ratio(db: Session = Depends(get_db)):
     """
-    统计双一流、985、211院校各自的数量占比。
-    使用 major_detail 表中的 syl/b985/b211 字段（取值 "1"/"0"）。
+    统计双一流、985、211、自划线、博士点院校各自的数量。
+    注意：这些类别存在重叠（如985院校一定是211院校），
+    因此使用柱状图展示各类别的独立计数，而非饼图。
     """
     total = db.query(func.count(distinct(MajorDetail.dwdm))).scalar() or 0
 
@@ -106,14 +107,20 @@ def elite_university_ratio(db: Session = Depends(get_db)):
         .filter(_is_true(MajorDetail.b211))
         .scalar()
     ) or 0
+    zhx_count = (
+        db.query(func.count(distinct(MajorDetail.dwdm)))
+        .filter(_is_true(MajorDetail.zhx))
+        .scalar()
+    ) or 0
+    bs_count = (
+        db.query(func.count(distinct(MajorDetail.dwdm)))
+        .filter(_is_true(MajorDetail.bs))
+        .scalar()
+    ) or 0
 
     return {
-        "items": [
-            {"name": "双一流院校", "value": syl_count},
-            {"name": "985院校", "value": b985_count},
-            {"name": "211院校", "value": b211_count},
-            {"name": "普通院校", "value": max(0, total - b211_count)},
-        ]
+        "categories": ["院校总数", "双一流", "985", "211", "自划线", "博士点"],
+        "values": [total, syl_count, b985_count, b211_count, zhx_count, bs_count],
     }
 
 

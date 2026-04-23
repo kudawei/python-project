@@ -17,7 +17,7 @@
         <v-chart :option="provinceUniOption" autoresize class="chart" />
       </el-card>
       <el-card shadow="never" class="chart-card chart-card-sm">
-        <template #header><h4>重点院校分类占比</h4></template>
+        <template #header><h4>重点院校数量对比</h4></template>
         <v-chart :option="eliteRatioOption" autoresize class="chart" />
       </el-card>
       <el-card shadow="never" class="chart-card chart-card-sm">
@@ -242,8 +242,9 @@ onMounted(async () => {
     const provUni = provUniRes.data
     provinceUniOption.value = barOption(provUni.categories, provUni.values, '#5470c6', provUni.categories.length > 15)
 
-    // 图表2：重点院校占比
-    eliteRatioOption.value = pieOption(eliteRes.data.items)
+    // 图表2：重点院校数量对比（柱状图，因985/211/双一流存在重叠不适合饼图）
+    const elite = eliteRes.data
+    eliteRatioOption.value = barOption(elite.categories, elite.values, '#ee6666', false)
 
     // 图表3：学位类型
     degreeTypeOption.value = pieOption(degreeRes.data.items)
