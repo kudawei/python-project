@@ -29,13 +29,17 @@
       </div>
       <div class="rec-action">
         <el-button
-          type="warning"
-          :icon="Star"
+          :class="{ 'is-favorited': favoritedSet.has(item.dwdm || '') }"
           circle
           size="small"
           @click="emit('favorite', item)"
-          title="收藏"
-        />
+          :title="favoritedSet.has(item.dwdm || '') ? '已收藏' : '收藏'"
+        >
+          <el-icon :size="18" :color="favoritedSet.has(item.dwdm || '') ? '#f56c6c' : '#c0c4cc'">
+            <StarFilled v-if="favoritedSet.has(item.dwdm || '')" />
+            <Star v-else />
+          </el-icon>
+        </el-button>
       </div>
     </div>
   </div>
@@ -48,11 +52,12 @@
  * 展示单个梯度的推荐院校列表，支持收藏操作。
  * 标签兼容 '是'/'1' 两种取值格式。
  */
-import { Star, QuestionFilled } from '@element-plus/icons-vue'
+import { Star, StarFilled, QuestionFilled } from '@element-plus/icons-vue'
 import type { RecommendItem } from '@/types'
 
 defineProps<{
   items: RecommendItem[]
+  favoritedSet: Set<string>
 }>()
 
 const emit = defineEmits<{
@@ -145,5 +150,10 @@ function formatXxfs(val?: string): string {
 .rec-action {
   flex-shrink: 0;
   padding-top: 4px;
+}
+
+.is-favorited {
+  border-color: #f56c6c !important;
+  background-color: #fef0f0 !important;
 }
 </style>

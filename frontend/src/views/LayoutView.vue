@@ -38,6 +38,15 @@
           <el-icon><User /></el-icon>
           <span>考研画像</span>
         </el-menu-item>
+        <el-sub-menu index="data">
+          <template #title>
+            <el-icon><FolderOpened /></el-icon>
+            <span>支撑数据</span>
+          </template>
+          <el-menu-item index="/data/major">专业信息表</el-menu-item>
+          <el-menu-item index="/data/major-university">专业-院校关联表</el-menu-item>
+          <el-menu-item index="/data/major-detail">研究方向详情表</el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 
@@ -86,6 +95,7 @@ import {
   ArrowDown,
   School,
   DataBoard,
+  FolderOpened,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 

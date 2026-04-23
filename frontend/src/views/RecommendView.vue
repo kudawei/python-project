@@ -113,7 +113,7 @@
           </div>
           <p class="tier-desc">难度系数较高，需要付出更多努力的顶级院校</p>
         </template>
-        <recommend-list :items="result.sprint" @favorite="handleFavorite" />
+        <recommend-list :items="result.sprint" :favorited-set="favoritedSet" @favorite="handleFavorite" />
       </el-card>
 
       <!-- 稳妥院校 -->
@@ -126,7 +126,7 @@
           </div>
           <p class="tier-desc">难度适中，与您的期望高度匹配的院校</p>
         </template>
-        <recommend-list :items="result.stable" @favorite="handleFavorite" />
+        <recommend-list :items="result.stable" :favorited-set="favoritedSet" @favorite="handleFavorite" />
       </el-card>
 
       <!-- 保底院校 -->
@@ -139,7 +139,7 @@
           </div>
           <p class="tier-desc">难度较低，专业匹配且录取把握较大的院校</p>
         </template>
-        <recommend-list :items="result.safe" @favorite="handleFavorite" />
+        <recommend-list :items="result.safe" :favorited-set="favoritedSet" @favorite="handleFavorite" />
       </el-card>
     </div>
   </div>
@@ -157,7 +157,7 @@ import { MagicStick, QuestionFilled } from '@element-plus/icons-vue'
 import type { CascadeOption, RecommendResponse, RecommendItem } from '@/types'
 import { getCategoriesApi, getDisciplinesApi, getMajorsApi } from '@/api/search'
 import { getRecommendationsApi } from '@/api/recommend'
-import { addFavoriteApi } from '@/api/workbench'
+import { addFavoriteApi, removeFavoriteApi, batchCheckFavoritesApi, checkFavoriteApi } from '@/api/workbench'
 import { useUserStore } from '@/stores/user'
 import RecommendList from '@/components/RecommendList.vue'
 
@@ -175,6 +175,7 @@ const hasResult = ref(false)
 const profileLoaded = ref(false)
 
 const result = ref<RecommendResponse>({ sprint: [], stable: [], safe: [] })
+const favoritedSet = ref<Set<string>>(new Set())
 
 // 画像信息展示
 const profileProvincesText = computed(() => {
@@ -266,6 +267,14 @@ async function handleRecommend() {
     ) {
       ElMessage.info('该专业暂无可推荐的院校数据')
     }
+
+    // 批量查询已收藏状态
+    try {
+      const favRes = await batchCheckFavoritesApi(selectedZydm.value)
+      favoritedSet.value = new Set(favRes.data.favorited_dwdm_list)
+    } catch {
+      favoritedSet.value = new Set()
+    }
   } catch {
     // 错误已在拦截器处理
   } finally {
@@ -273,18 +282,37 @@ async function handleRecommend() {
   }
 }
 
-/** 收藏推荐院校 */
+/** 收藏/取消收藏推荐院校 */
 async function handleFavorite(item: RecommendItem) {
-  try {
-    await addFavoriteApi({
-      dwdm: item.dwdm || '',
-      dwmc: item.dwmc || '',
-      zydm: selectedZydm.value,
-      zymc: '',
-    })
-    ElMessage.success('收藏成功')
-  } catch {
-    // 已处理
+  const dwdm = item.dwdm || ''
+  if (favoritedSet.value.has(dwdm)) {
+    // 已收藏 → 取消收藏
+    try {
+      const { data } = await checkFavoriteApi(dwdm, selectedZydm.value)
+      if (data.favorite_id) {
+        await removeFavoriteApi(data.favorite_id)
+        favoritedSet.value.delete(dwdm)
+        favoritedSet.value = new Set(favoritedSet.value)
+        ElMessage.success('已取消收藏')
+      }
+    } catch {
+      // 已处理
+    }
+  } else {
+    // 未收藏 → 添加收藏
+    try {
+      await addFavoriteApi({
+        dwdm,
+        dwmc: item.dwmc || '',
+        zydm: selectedZydm.value,
+        zymc: '',
+      })
+      favoritedSet.value.add(dwdm)
+      favoritedSet.value = new Set(favoritedSet.value)
+      ElMessage.success('收藏成功')
+    } catch {
+      // 已处理
+    }
   }
 }
 </script>

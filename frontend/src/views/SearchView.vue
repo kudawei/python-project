@@ -145,12 +145,15 @@
           </div>
           <div class="uni-actions">
             <el-button
-              :type="isFavorited(item) ? 'danger' : 'default'"
+              :class="{ 'is-favorited': isFavorited(item) }"
               circle
               @click="handleToggleFavorite(item)"
               :title="isFavorited(item) ? '取消收藏' : '收藏'"
             >
-              <span style="font-size: 16px;">{{ isFavorited(item) ? '❤️' : '🤍' }}</span>
+              <el-icon :size="18" :color="isFavorited(item) ? '#f56c6c' : '#c0c4cc'">
+                <StarFilled v-if="isFavorited(item)" />
+                <Star v-else />
+              </el-icon>
             </el-button>
           </div>
         </div>
@@ -180,7 +183,7 @@
  */
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
+import { Search, Star, StarFilled } from '@element-plus/icons-vue'
 import type { CascadeOption, UniversityItem, SearchResponse } from '@/types'
 import {
   getCategoriesApi,
@@ -433,5 +436,10 @@ async function handleToggleFavorite(item: UniversityItem) {
   margin-top: 20px;
   display: flex;
   justify-content: center;
+}
+
+.is-favorited {
+  border-color: #f56c6c !important;
+  background-color: #fef0f0 !important;
 }
 </style>

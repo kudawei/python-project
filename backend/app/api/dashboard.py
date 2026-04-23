@@ -41,7 +41,7 @@ def overview(db: Session = Depends(get_db)):
     total_universities = db.query(func.count(distinct(MajorDetail.dwdm))).scalar() or 0
     total_majors = db.query(func.count(distinct(MajorDetail.zydm))).scalar() or 0
     total_categories = db.query(func.count(distinct(MajorDetail.mldm))).scalar() or 0
-    total_provinces = db.query(func.count(distinct(MajorDetail.szss))).filter(MajorDetail.szss.isnot(None)).scalar() or 0
+    total_provinces = db.query(func.count(distinct(MajorDetail.szss))).filter(MajorDetail.szss.isnot(None), MajorDetail.szss != "").scalar() or 0
     syl_count = (
         db.query(func.count(distinct(MajorDetail.dwdm)))
         .filter(_is_true(MajorDetail.syl))
