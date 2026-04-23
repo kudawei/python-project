@@ -27,7 +27,13 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/search',
+          redirect: '/dashboard',
+        },
+        {
+          path: 'dashboard',
+          name: 'Dashboard',
+          component: () => import('@/views/DashboardView.vue'),
+          meta: { title: '数据看板' },
         },
         {
           path: 'profile',
