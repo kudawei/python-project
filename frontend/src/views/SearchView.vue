@@ -239,16 +239,8 @@ async function onDisciplineChange(val: string) {
   }
 }
 
-/** 执行搜索 */
-async function handleSearch() {
-  if (!selectedZydm.value) {
-    ElMessage.warning('请先选择专业')
-    return
-  }
-
-  searched.value = true
-  currentPage.value = 1
-
+/** 请求搜索结果（不重置页码） */
+async function fetchResults() {
   const res = await searchUniversitiesApi({
     zydm: selectedZydm.value,
     szss: filterProvinces.value.length > 0 ? filterProvinces.value.join(',') : undefined,
@@ -261,6 +253,18 @@ async function handleSearch() {
   searchResult.value = res.data
 }
 
+/** 执行搜索（重置到第1页） */
+async function handleSearch() {
+  if (!selectedZydm.value) {
+    ElMessage.warning('请先选择专业')
+    return
+  }
+
+  searched.value = true
+  currentPage.value = 1
+  await fetchResults()
+}
+
 /** 重置过滤条件 */
 function handleReset() {
   filterProvinces.value = []
@@ -269,10 +273,10 @@ function handleReset() {
   filterBs.value = false
 }
 
-/** 分页变更 */
+/** 分页变更（保持当前筛选条件，切换页码） */
 async function handlePageChange(page: number) {
   currentPage.value = page
-  await handleSearch()
+  await fetchResults()
 }
 
 /** 收藏院校 */
