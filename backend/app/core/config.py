@@ -33,8 +33,8 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # Token有效期: 24小时
 
-    # CORS 跨域配置
-    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    # CORS 跨域配置（开发环境允许所有来源，生产环境请按需限制）
+    CORS_ORIGINS: list[str] = ["*"]
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
