@@ -38,9 +38,17 @@
           <el-icon><DataAnalysis /></el-icon>
           <span>院校对比</span>
         </el-menu-item>
+        <el-menu-item index="/major-distribution">
+          <el-icon><MapLocation /></el-icon>
+          <span>专业分布</span>
+        </el-menu-item>
         <el-menu-item index="/profile">
           <el-icon><User /></el-icon>
           <span>考研画像</span>
+        </el-menu-item>
+        <el-menu-item index="/operation-log">
+          <el-icon><List /></el-icon>
+          <span>操作日志</span>
         </el-menu-item>
         <el-sub-menu index="data">
           <template #title>
@@ -101,6 +109,8 @@ import {
   DataBoard,
   FolderOpened,
   Clock,
+  MapLocation,
+  List,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 

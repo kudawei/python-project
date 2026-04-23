@@ -28,6 +28,7 @@
         <span class="score-value">{{ item.score }}</span>
       </div>
       <div class="rec-action">
+        <el-button size="small" type="primary" text @click="goDetail(item.dwdm || '')">查看详情</el-button>
         <el-button
           :class="{ 'is-favorited': favoritedSet.has(item.dwdm || '') }"
           circle
@@ -52,8 +53,11 @@
  * 展示单个梯度的推荐院校列表，支持收藏操作。
  * 标签兼容 '是'/'1' 两种取值格式。
  */
+import { useRouter } from 'vue-router'
 import { Star, StarFilled, QuestionFilled } from '@element-plus/icons-vue'
 import type { RecommendItem } from '@/types'
+
+const router = useRouter()
 
 defineProps<{
   items: RecommendItem[]
@@ -63,6 +67,11 @@ defineProps<{
 const emit = defineEmits<{
   favorite: [item: RecommendItem]
 }>()
+
+/** 跳转院校详情页 */
+function goDetail(dwdm: string) {
+  router.push({ path: '/university', query: { dwdm } })
+}
 
 /** 兼容 '是'/'1' 判断 */
 function isYes(val?: string): boolean {

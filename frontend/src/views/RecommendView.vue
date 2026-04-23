@@ -103,6 +103,14 @@
 
     <!-- 推荐结果展示 -->
     <div v-if="hasResult" class="result-section">
+      <!-- 操作栏：导出 PDF 报告 -->
+      <div class="action-bar">
+        <el-button type="primary" :loading="exporting" @click="handleExportPdf">
+          <el-icon><Download /></el-icon>
+          一键生成择校报告 PDF
+        </el-button>
+      </div>
+
       <!-- 冲刺院校 -->
       <el-card shadow="never" class="tier-card tier-sprint">
         <template #header>
@@ -153,11 +161,13 @@
  */
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { MagicStick, QuestionFilled } from '@element-plus/icons-vue'
+import { MagicStick, QuestionFilled, Download } from '@element-plus/icons-vue'
 import type { CascadeOption, RecommendResponse, RecommendItem } from '@/types'
 import { getCategoriesApi, getDisciplinesApi, getMajorsApi } from '@/api/search'
 import { getRecommendationsApi } from '@/api/recommend'
 import { addFavoriteApi, removeFavoriteApi, batchCheckFavoritesApi, checkFavoriteApi } from '@/api/workbench'
+import { generateReportApi } from '@/api/report'
+import { addOperationLogApi } from '@/api/oplog'
 import { useUserStore } from '@/stores/user'
 import RecommendList from '@/components/RecommendList.vue'
 
@@ -176,6 +186,7 @@ const profileLoaded = ref(false)
 
 const result = ref<RecommendResponse>({ sprint: [], stable: [], safe: [] })
 const favoritedSet = ref<Set<string>>(new Set())
+const exporting = ref(false)
 
 // 画像信息展示
 const profileProvincesText = computed(() => {
@@ -315,6 +326,29 @@ async function handleFavorite(item: RecommendItem) {
     }
   }
 }
+
+/** 一键导出 PDF 报告 */
+async function handleExportPdf() {
+  exporting.value = true
+  try {
+    const res = await generateReportApi(selectedZydm.value)
+    // 将 blob 下载为文件
+    const blob = new Blob([res.data], { type: 'application/pdf' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `考研择校报告_${selectedZydm.value}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+    ElMessage.success('报告已生成，开始下载')
+    // 记录操作日志
+    addOperationLogApi('export_pdf', JSON.stringify({ zydm: selectedZydm.value }))
+  } catch {
+    ElMessage.error('报告生成失败，请稍后重试')
+  } finally {
+    exporting.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -340,6 +374,11 @@ async function handleFavorite(item: RecommendItem) {
   background: #f5f7fa;
   padding: 12px;
   border-radius: 6px;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .result-section {

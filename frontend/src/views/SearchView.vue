@@ -145,6 +145,14 @@
           </div>
           <div class="uni-actions">
             <el-button
+              size="small"
+              type="primary"
+              text
+              @click="router.push({ path: '/university', query: { dwdm: item.dwdm } })"
+            >
+              查看详情
+            </el-button>
+            <el-button
               :class="{ 'is-favorited': isFavorited(item) }"
               circle
               @click="handleToggleFavorite(item)"
@@ -182,6 +190,7 @@
  * 收藏按钮支持已收藏/未收藏状态切换。
  */
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Search, Star, StarFilled } from '@element-plus/icons-vue'
 import type { CascadeOption, UniversityItem, SearchResponse } from '@/types'
@@ -193,6 +202,8 @@ import {
   searchUniversitiesApi,
 } from '@/api/search'
 import { addFavoriteApi, removeFavoriteApi, batchCheckFavoritesApi } from '@/api/workbench'
+
+const router = useRouter()
 
 // ===== 级联选择器状态 =====
 const categories = ref<CascadeOption[]>([])
