@@ -66,6 +66,12 @@ const router = createRouter({
           meta: { title: '院校对比' },
         },
         {
+          path: 'recommend-history',
+          name: 'RecommendHistory',
+          component: () => import('@/views/RecommendHistoryView.vue'),
+          meta: { title: '推荐历史' },
+        },
+        {
           path: 'data/major',
           name: 'DataMajor',
           component: () => import('@/views/DataMajorView.vue'),

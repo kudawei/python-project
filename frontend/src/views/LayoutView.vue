@@ -30,6 +30,10 @@
           <el-icon><Star /></el-icon>
           <span>我的收藏</span>
         </el-menu-item>
+        <el-menu-item index="/recommend-history">
+          <el-icon><Clock /></el-icon>
+          <span>推荐历史</span>
+        </el-menu-item>
         <el-menu-item index="/compare">
           <el-icon><DataAnalysis /></el-icon>
           <span>院校对比</span>
@@ -96,6 +100,7 @@ import {
   School,
   DataBoard,
   FolderOpened,
+  Clock,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 
