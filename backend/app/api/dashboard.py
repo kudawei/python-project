@@ -130,18 +130,21 @@ def elite_university_ratio(db: Session = Depends(get_db)):
 def degree_type_distribution(db: Session = Depends(get_db)):
     """
     统计学术学位与专业学位的招生方向数量分布，用于饼图展示。
+    xwlx 字段取值: "xs"=学术学位, "zy"=专业学位。
+    xwlxmc 可能为空，因此同时兼容两个字段。
     """
+    type_map = {"xs": "学术学位", "zy": "专业学位"}
     rows = (
         db.query(
-            MajorDetail.xwlxmc,
+            MajorDetail.xwlx,
             func.count(MajorDetail.id).label("count"),
         )
-        .filter(MajorDetail.xwlxmc.isnot(None), MajorDetail.xwlxmc != "")
-        .group_by(MajorDetail.xwlxmc)
+        .filter(MajorDetail.xwlx.isnot(None), MajorDetail.xwlx != "")
+        .group_by(MajorDetail.xwlx)
         .all()
     )
     return {
-        "items": [{"name": r[0], "value": r[1]} for r in rows],
+        "items": [{"name": type_map.get(r[0], r[0]), "value": r[1]} for r in rows],
     }
 
 

@@ -7,16 +7,24 @@
       class="rec-item"
     >
       <div class="rec-info">
-        <h4>{{ item.dwmc }}</h4>
+        <div class="rec-title-row">
+          <h4>{{ item.dwmc }}</h4>
+          <el-tag size="small" type="info" effect="plain">{{ item.szss }}</el-tag>
+        </div>
         <div class="tags">
-          <el-tag v-if="item.syl === '是'" type="danger" size="small">双一流</el-tag>
-          <el-tag v-if="item.zhx === '是'" type="warning" size="small">自划线</el-tag>
-          <el-tag v-if="item.bs === '是'" type="success" size="small">博士点</el-tag>
-          <el-tag size="small">{{ item.szss }}</el-tag>
+          <el-tag v-if="isYes(item.syl)" type="danger" size="small">双一流</el-tag>
+          <el-tag v-if="isYes(item.zhx)" type="warning" size="small">自划线</el-tag>
+          <el-tag v-if="isYes(item.bs)" type="success" size="small">博士点</el-tag>
+          <el-tag v-if="item.xxfs" size="small" effect="plain">{{ formatXxfs(item.xxfs) }}</el-tag>
+        </div>
+        <div class="rec-detail">
+          <span v-if="item.dwdm" class="detail-item">院校代码：{{ item.dwdm }}</span>
         </div>
       </div>
       <div class="rec-score">
-        <span class="score-label">综合得分</span>
+        <el-tooltip content="综合得分 = 难度系数(自划线+5, 双一流+3, 博士点+1) + 匹配度(省市+10, 学习方式+5)" placement="top">
+          <span class="score-label">综合得分 <el-icon :size="12"><QuestionFilled /></el-icon></span>
+        </el-tooltip>
         <span class="score-value">{{ item.score }}</span>
       </div>
       <div class="rec-action">
@@ -38,8 +46,9 @@
 /**
  * 推荐列表子组件
  * 展示单个梯度的推荐院校列表，支持收藏操作。
+ * 标签兼容 '是'/'1' 两种取值格式。
  */
-import { Star } from '@element-plus/icons-vue'
+import { Star, QuestionFilled } from '@element-plus/icons-vue'
 import type { RecommendItem } from '@/types'
 
 defineProps<{
@@ -49,14 +58,30 @@ defineProps<{
 const emit = defineEmits<{
   favorite: [item: RecommendItem]
 }>()
+
+/** 兼容 '是'/'1' 判断 */
+function isYes(val?: string): boolean {
+  return val === '是' || val === '1'
+}
+
+/** 格式化学习方式 */
+function formatXxfs(val?: string): string {
+  if (val === '1' || val === '全日制') return '全日制'
+  if (val === '2' || val === '非全日制') return '非全日制'
+  return val || ''
+}
 </script>
 
 <style scoped>
 .rec-item {
   display: flex;
-  align-items: center;
-  padding: 12px 0;
+  align-items: flex-start;
+  padding: 16px 0;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.rec-item:hover {
+  background-color: #fafafa;
 }
 
 .rec-item:last-child {
@@ -67,16 +92,31 @@ const emit = defineEmits<{
   flex: 1;
 }
 
+.rec-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .rec-info h4 {
-  font-size: 15px;
+  font-size: 16px;
   color: #303133;
-  margin-bottom: 6px;
+  margin: 0;
 }
 
 .tags {
   display: flex;
-  gap: 4px;
+  gap: 5px;
   flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.rec-detail {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #909399;
 }
 
 .rec-score {
@@ -84,20 +124,26 @@ const emit = defineEmits<{
   flex-direction: column;
   align-items: center;
   margin: 0 24px;
+  min-width: 80px;
 }
 
 .score-label {
   font-size: 12px;
   color: #909399;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: help;
 }
 
 .score-value {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
   color: #409eff;
 }
 
 .rec-action {
   flex-shrink: 0;
+  padding-top: 4px;
 }
 </style>

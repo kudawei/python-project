@@ -115,6 +115,24 @@ def check_favorite(
     return {"is_favorited": existing is not None, "favorite_id": existing.id if existing else None}
 
 
+@router.get("/favorites/batch_check", summary="批量检查收藏状态")
+def batch_check_favorites(
+    zydm: str = Query(..., description="专业代码"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    批量返回当前用户在指定专业下已收藏的所有院校代码。
+    前端可用于标记检索结果中的已收藏项。
+    """
+    favorites = (
+        db.query(Favorite.dwdm)
+        .filter(Favorite.user_id == current_user.id, Favorite.zydm == zydm)
+        .all()
+    )
+    return {"favorited_dwdm_list": [f[0] for f in favorites]}
+
+
 # ==================== 院校横向对比 ====================
 
 

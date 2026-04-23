@@ -1,6 +1,14 @@
 <template>
-  <!-- 数据看板页面 —— 包含 9 个统计图表 -->
-  <div class="dashboard-page" v-loading="loading">
+  <!-- 数据看板页面 —— 包含 9 个统计图表，支持全屏切换 -->
+  <div :class="['dashboard-page', { 'is-fullscreen': isFullscreen }]" ref="dashboardRef" v-loading="loading">
+
+    <!-- 顶部操作栏 -->
+    <div class="dashboard-toolbar">
+      <h3>数据看板</h3>
+      <el-button :icon="isFullscreen ? 'CloseBold' : 'FullScreen'" @click="toggleFullscreen" size="small">
+        {{ isFullscreen ? '退出全屏' : '全屏展示' }}
+      </el-button>
+    </div>
 
     <!-- 顶部概览卡片 -->
     <div class="overview-row">
@@ -10,51 +18,55 @@
       </el-card>
     </div>
 
-    <!-- 第一行：省市院校分布 + 重点院校占比 + 学位类型 -->
+    <!-- 第一行：省市院校分布 + 重点院校数量对比 -->
     <div class="chart-row">
-      <el-card shadow="never" class="chart-card chart-card-lg">
+      <el-card shadow="never" class="chart-card">
         <template #header><h4>各省市院校数量分布</h4></template>
         <v-chart :option="provinceUniOption" autoresize class="chart" />
       </el-card>
-      <el-card shadow="never" class="chart-card chart-card-sm">
+      <el-card shadow="never" class="chart-card">
         <template #header><h4>重点院校数量对比</h4></template>
         <v-chart :option="eliteRatioOption" autoresize class="chart" />
       </el-card>
-      <el-card shadow="never" class="chart-card chart-card-sm">
+    </div>
+
+    <!-- 第二行：学位类型 + 学习方式 -->
+    <div class="chart-row">
+      <el-card shadow="never" class="chart-card">
         <template #header><h4>学位类型分布</h4></template>
         <v-chart :option="degreeTypeOption" autoresize class="chart" />
       </el-card>
-    </div>
-
-    <!-- 第二行：门类招生方向 + 学习方式 + 自划线院校专业数 -->
-    <div class="chart-row">
-      <el-card shadow="never" class="chart-card chart-card-lg">
-        <template #header><h4>各门类招生方向数量分布</h4></template>
-        <v-chart :option="categoryDirOption" autoresize class="chart" />
-      </el-card>
-      <el-card shadow="never" class="chart-card chart-card-sm">
+      <el-card shadow="never" class="chart-card">
         <template #header><h4>学习方式分布</h4></template>
         <v-chart :option="studyModeOption" autoresize class="chart" />
       </el-card>
-      <el-card shadow="never" class="chart-card chart-card-sm">
+    </div>
+
+    <!-- 第三行：门类招生方向 + 自划线院校专业数 TOP15 -->
+    <div class="chart-row">
+      <el-card shadow="never" class="chart-card">
+        <template #header><h4>各门类招生方向数量分布</h4></template>
+        <v-chart :option="categoryDirOption" autoresize class="chart" />
+      </el-card>
+      <el-card shadow="never" class="chart-card">
         <template #header><h4>自划线院校招生专业数 TOP15</h4></template>
         <v-chart :option="zhxMajorOption" autoresize class="chart" />
       </el-card>
     </div>
 
-    <!-- 第三行：省市招生人数 + 推免占比 TOP15 -->
+    <!-- 第四行：省市招生人数 + 推免占比 TOP15 -->
     <div class="chart-row">
-      <el-card shadow="never" class="chart-card chart-card-md">
+      <el-card shadow="never" class="chart-card">
         <template #header><h4>各省市拟招生总人数</h4></template>
         <v-chart :option="provinceEnrollOption" autoresize class="chart" />
       </el-card>
-      <el-card shadow="never" class="chart-card chart-card-md">
+      <el-card shadow="never" class="chart-card">
         <template #header><h4>院校推免占比 TOP15</h4></template>
         <v-chart :option="tuimianOption" autoresize class="chart" />
       </el-card>
     </div>
 
-    <!-- 第四行：K-Means 聚类分析 -->
+    <!-- 第五行：K-Means 聚类分析（独占一行） -->
     <div class="chart-row">
       <el-card shadow="never" class="chart-card chart-card-full">
         <template #header>
@@ -90,18 +102,9 @@
 <script setup lang="ts">
 /**
  * 数据看板页面
- * 包含 9 个统计图表：
- * 1. 各省市院校数量分布（柱状图）
- * 2. 重点院校分类占比 - 双一流/985/211（饼图）
- * 3. 学位类型分布（饼图）
- * 4. 各门类招生方向数量分布（柱状图）
- * 5. 学习方式分布（饼图）
- * 6. 自划线院校招生专业数 TOP15（横向条形图）
- * 7. 各省市拟招生总人数（柱状图）
- * 8. 院校推免占比 TOP15（柱状图）
- * 9. 院校竞争力聚类分析 —— K-Means 算法（散点图）
+ * 包含 9 个统计图表，支持全屏/退出全屏切换。
  */
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import VChart from 'vue-echarts'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -126,20 +129,35 @@ import {
   getUniversityClusterAnalysisApi,
 } from '@/api/dashboard'
 
-// 注册 ECharts 组件（按需引入，减小打包体积）
 use([
-  CanvasRenderer,
-  BarChart,
-  PieChart,
-  ScatterChart,
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-  GridComponent,
-  DataZoomComponent,
+  CanvasRenderer, BarChart, PieChart, ScatterChart,
+  TitleComponent, TooltipComponent, LegendComponent, GridComponent, DataZoomComponent,
 ])
 
 const loading = ref(true)
+const dashboardRef = ref<HTMLElement>()
+const isFullscreen = ref(false)
+
+// ===== 全屏切换 =====
+function toggleFullscreen() {
+  if (!isFullscreen.value) {
+    dashboardRef.value?.requestFullscreen?.()
+  } else {
+    document.exitFullscreen?.()
+  }
+}
+
+function onFullscreenChange() {
+  isFullscreen.value = !!document.fullscreenElement
+}
+
+onMounted(() => {
+  document.addEventListener('fullscreenchange', onFullscreenChange)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('fullscreenchange', onFullscreenChange)
+})
 
 // ===== 概览数据 =====
 const overviewCards = ref([
@@ -195,7 +213,7 @@ function pieOption(items: { name: string; value: number }[]) {
       center: ['50%', '45%'],
       avoidLabelOverlap: true,
       itemStyle: { borderRadius: 6 },
-      label: { show: true, formatter: '{b}\n{d}%' },
+      label: { show: true, formatter: '{b}\n{c} ({d}%)' },
       data: items,
     }],
   }
@@ -204,26 +222,13 @@ function pieOption(items: { name: string; value: number }[]) {
 onMounted(async () => {
   try {
     const [
-      overviewRes,
-      provUniRes,
-      eliteRes,
-      degreeRes,
-      studyRes,
-      zhxRes,
-      catDirRes,
-      provEnrollRes,
-      tuimianRes,
-      clusterRes,
+      overviewRes, provUniRes, eliteRes, degreeRes, studyRes,
+      zhxRes, catDirRes, provEnrollRes, tuimianRes, clusterRes,
     ] = await Promise.all([
-      getOverviewApi(),
-      getProvinceUniversityCountApi(),
-      getEliteUniversityRatioApi(),
-      getDegreeTypeDistributionApi(),
-      getStudyModeDistributionApi(),
-      getZhxUniversityMajorCountApi(),
-      getCategoryDirectionCountApi(),
-      getProvinceEnrollmentApi(),
-      getUniversityTuimianRatioApi(),
+      getOverviewApi(), getProvinceUniversityCountApi(), getEliteUniversityRatioApi(),
+      getDegreeTypeDistributionApi(), getStudyModeDistributionApi(),
+      getZhxUniversityMajorCountApi(), getCategoryDirectionCountApi(),
+      getProvinceEnrollmentApi(), getUniversityTuimianRatioApi(),
       getUniversityClusterAnalysisApi(),
     ])
 
@@ -242,19 +247,19 @@ onMounted(async () => {
     const provUni = provUniRes.data
     provinceUniOption.value = barOption(provUni.categories, provUni.values, '#5470c6', provUni.categories.length > 15)
 
-    // 图表2：重点院校数量对比（柱状图，因985/211/双一流存在重叠不适合饼图）
+    // 图表2：重点院校数量对比
     const elite = eliteRes.data
     eliteRatioOption.value = barOption(elite.categories, elite.values, '#ee6666', false)
 
     // 图表3：学位类型
     degreeTypeOption.value = pieOption(degreeRes.data.items)
 
-    // 图表4：门类招生方向数量
+    // 图表4：学习方式
+    studyModeOption.value = pieOption(studyRes.data.items)
+
+    // 图表5：门类招生方向数量
     const catDir = catDirRes.data
     categoryDirOption.value = barOption(catDir.categories, catDir.values, '#91cc75', catDir.categories.length > 10)
-
-    // 图表5：学习方式
-    studyModeOption.value = pieOption(studyRes.data.items)
 
     // 图表6：自划线院校专业数 TOP15（横向条形图）
     const zhx = zhxRes.data
@@ -271,12 +276,8 @@ onMounted(async () => {
         type: 'bar',
         data: [...zhx.values].reverse(),
         itemStyle: {
-          color: {
-            type: 'linear', x: 0, y: 0, x2: 1, y2: 0,
-            colorStops: [
-              { offset: 0, color: '#73c0de' },
-              { offset: 1, color: '#5470c6' },
-            ],
+          color: { type: 'linear', x: 0, y: 0, x2: 1, y2: 0,
+            colorStops: [{ offset: 0, color: '#73c0de' }, { offset: 1, color: '#5470c6' }],
           },
         },
         barMaxWidth: 20,
@@ -287,16 +288,14 @@ onMounted(async () => {
     const provEnroll = provEnrollRes.data
     provinceEnrollOption.value = barOption(provEnroll.categories, provEnroll.values, '#fac858', provEnroll.categories.length > 15)
 
-    // 图表8：推免占比 TOP15（双柱图）
+    // 图表8：推免占比 TOP15
     const tm = tuimianRes.data
     tuimianOption.value = {
       tooltip: {
         trigger: 'axis',
         formatter: (params: any) => {
           let s = params[0].name + '<br/>'
-          for (const p of params) {
-            s += `${p.marker} ${p.seriesName}: ${p.value}<br/>`
-          }
+          for (const p of params) s += `${p.marker} ${p.seriesName}: ${p.value}<br/>`
           const idx = params[0].dataIndex
           s += `推免占比: ${tm.ratio_values[idx]}%`
           return s
@@ -304,25 +303,11 @@ onMounted(async () => {
       },
       legend: { bottom: 0 },
       grid: { left: '3%', right: '4%', bottom: '12%', containLabel: true },
-      xAxis: {
-        type: 'category',
-        data: tm.categories,
-        axisLabel: { rotate: 40, fontSize: 10 },
-      },
+      xAxis: { type: 'category', data: tm.categories, axisLabel: { rotate: 40, fontSize: 10 } },
       yAxis: { type: 'value', name: '人数' },
       series: [
-        {
-          name: '拟招生人数',
-          type: 'bar',
-          data: tm.total_values,
-          itemStyle: { color: '#5470c6' },
-        },
-        {
-          name: '推免人数',
-          type: 'bar',
-          data: tm.tuimian_values,
-          itemStyle: { color: '#ee6666' },
-        },
+        { name: '拟招生人数', type: 'bar', data: tm.total_values, itemStyle: { color: '#5470c6' } },
+        { name: '推免人数', type: 'bar', data: tm.tuimian_values, itemStyle: { color: '#ee6666' } },
       ],
     }
 
@@ -335,28 +320,20 @@ onMounted(async () => {
   }
 })
 
-/** 构建 K-Means 聚类散点图配置 */
 function buildClusterChart(data: any) {
   const tierColors: Record<string, string> = {
-    '高竞争力': '#ee6666',
-    '中等竞争力': '#fac858',
-    '一般竞争力': '#91cc75',
+    '高竞争力': '#ee6666', '中等竞争力': '#fac858', '一般竞争力': '#91cc75',
   }
   const labels = data.labels || ['高竞争力', '中等竞争力', '一般竞争力']
-
-  // 按聚类分组
   const seriesMap: Record<string, any[]> = {}
   labels.forEach((l: string) => { seriesMap[l] = [] })
 
   for (const item of (data.clusters || [])) {
-    const tier = item.tier
-    if (seriesMap[tier]) {
-      // X轴：招生专业数，Y轴：拟招生总人数，气泡大小：属性总分
+    if (seriesMap[item.tier]) {
       const attrScore = item.is_syl + item.is_985 + item.is_211 + item.is_zhx + item.is_bs
-      seriesMap[tier].push({
+      seriesMap[item.tier].push({
         value: [item.major_count, item.enrollment, attrScore * 4 + 8],
-        name: item.dwmc,
-        itemData: item,
+        name: item.dwmc, itemData: item,
       })
     }
   }
@@ -377,21 +354,10 @@ function buildClusterChart(data: any) {
     },
     legend: { data: labels, bottom: 0 },
     grid: { left: '3%', right: '10%', bottom: '12%', containLabel: true },
-    xAxis: {
-      type: 'value',
-      name: '招生专业数量',
-      nameLocation: 'middle',
-      nameGap: 30,
-    },
-    yAxis: {
-      type: 'value',
-      name: '拟招生总人数',
-      nameLocation: 'middle',
-      nameGap: 50,
-    },
+    xAxis: { type: 'value', name: '招生专业数量', nameLocation: 'middle', nameGap: 30 },
+    yAxis: { type: 'value', name: '拟招生总人数', nameLocation: 'middle', nameGap: 50 },
     series: labels.map((label: string) => ({
-      name: label,
-      type: 'scatter',
+      name: label, type: 'scatter',
       data: seriesMap[label] || [],
       symbolSize: (val: number[]) => val[2] || 10,
       itemStyle: { color: tierColors[label] || '#999' },
@@ -405,6 +371,18 @@ function buildClusterChart(data: any) {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.dashboard-page.is-fullscreen {
+  background: #f5f5f5;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.dashboard-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .overview-row {
@@ -433,18 +411,45 @@ function buildClusterChart(data: any) {
   gap: 16px;
 }
 
-.chart-card { overflow: hidden; }
-.chart-card-lg { flex: 2; }
-.chart-card-sm { flex: 1; }
-.chart-card-md { flex: 1; }
-.chart-card-full { flex: 1; }
+.chart-card {
+  flex: 1;
+  overflow: hidden;
+}
 
-.chart { height: 320px; width: 100%; }
-.chart-tall { height: 400px; }
+.chart-card-full {
+  flex: 1;
+}
 
-.algo-header { display: flex; align-items: center; gap: 8px; }
-.algo-desc { font-size: 13px; color: #909399; margin-top: 4px; }
+.chart {
+  height: 360px;
+  width: 100%;
+}
 
-.cluster-content { display: flex; flex-direction: column; gap: 16px; }
-.cluster-table h5 { font-size: 14px; margin-bottom: 8px; color: #303133; }
+.chart-tall {
+  height: 420px;
+}
+
+.algo-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.algo-desc {
+  font-size: 13px;
+  color: #909399;
+  margin-top: 4px;
+}
+
+.cluster-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cluster-table h5 {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #303133;
+}
 </style>

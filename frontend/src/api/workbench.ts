@@ -27,6 +27,13 @@ export function checkFavoriteApi(dwdm: string, zydm: string) {
   })
 }
 
+/** 批量检查收藏状态 */
+export function batchCheckFavoritesApi(zydm: string) {
+  return request.get<{ favorited_dwdm_list: string[] }>('/workbench/favorites/batch_check', {
+    params: { zydm },
+  })
+}
+
 /** 院校横向对比 */
 export function compareUniversitiesApi(data: { dwdm_list: string[]; zydm: string }) {
   return request.post<CompareItem[]>('/workbench/compare', data)
