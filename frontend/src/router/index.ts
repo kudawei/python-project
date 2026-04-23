@@ -27,7 +27,13 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/search',
+          redirect: '/dashboard',
+        },
+        {
+          path: 'dashboard',
+          name: 'Dashboard',
+          component: () => import('@/views/DashboardView.vue'),
+          meta: { title: '数据看板' },
         },
         {
           path: 'profile',
@@ -58,6 +64,48 @@ const router = createRouter({
           name: 'Compare',
           component: () => import('@/views/CompareView.vue'),
           meta: { title: '院校对比' },
+        },
+        {
+          path: 'recommend-history',
+          name: 'RecommendHistory',
+          component: () => import('@/views/RecommendHistoryView.vue'),
+          meta: { title: '推荐历史' },
+        },
+        {
+          path: 'data/major',
+          name: 'DataMajor',
+          component: () => import('@/views/DataMajorView.vue'),
+          meta: { title: '专业信息表' },
+        },
+        {
+          path: 'data/major-university',
+          name: 'DataMajorUniversity',
+          component: () => import('@/views/DataMajorUniversityView.vue'),
+          meta: { title: '专业-院校关联表' },
+        },
+        {
+          path: 'data/major-detail',
+          name: 'DataMajorDetail',
+          component: () => import('@/views/DataMajorDetailView.vue'),
+          meta: { title: '专业研究方向详情表' },
+        },
+        {
+          path: 'university',
+          name: 'UniversityDetail',
+          component: () => import('@/views/UniversityDetailView.vue'),
+          meta: { title: '院校详情' },
+        },
+        {
+          path: 'major-distribution',
+          name: 'MajorDistribution',
+          component: () => import('@/views/MajorDistributionView.vue'),
+          meta: { title: '专业院校分布' },
+        },
+        {
+          path: 'operation-log',
+          name: 'OperationLog',
+          component: () => import('@/views/OperationLogView.vue'),
+          meta: { title: '操作日志' },
         },
       ],
     },

@@ -4,13 +4,42 @@
     <!-- 专业选择区 -->
     <el-card shadow="never">
       <template #header>
-        <h3>智能推荐 — 选择目标专业</h3>
-        <p class="sub-title">
-          根据您的考研意向画像，系统将为您推荐冲刺、稳妥、保底三个梯度的院校
-        </p>
+        <div class="card-header-row">
+          <div>
+            <h3>智能推荐 — 选择目标专业</h3>
+            <p class="sub-title">
+              根据您的考研意向画像，系统将为您推荐冲刺、稳妥、保底三个梯度的院校
+            </p>
+          </div>
+          <el-tooltip v-if="profileLoaded" placement="bottom">
+            <template #content>
+              <div style="line-height: 1.8; font-size: 13px;">
+                <p><strong>综合得分 = 难度系数 + 匹配度得分</strong></p>
+                <p>【难度系数】</p>
+                <p>自划线院校 +5 分 | 双一流院校 +3 分 | 博士点 +1 分</p>
+                <p>【匹配度得分】</p>
+                <p>院校省市匹配意向省市 +10 分 | 学习方式匹配 +5 分</p>
+                <p>【梯度划分规则】</p>
+                <p>根据"实力自评"设定难度阈值，高于阈值 → 冲刺，中间 → 稳妥，低于 → 保底</p>
+              </div>
+            </template>
+            <el-button :icon="QuestionFilled" circle size="small" text />
+          </el-tooltip>
+        </div>
       </template>
 
-      <el-form :inline="true" size="large">
+      <!-- 用户画像已加载时直接展示画像摘要 -->
+      <div v-if="profileLoaded" class="profile-summary">
+        <el-descriptions :column="3" border size="small">
+          <el-descriptions-item label="意向门类">{{ userStore.userInfo?.target_mlmc || '未设置' }}</el-descriptions-item>
+          <el-descriptions-item label="意向省市">{{ profileProvincesText }}</el-descriptions-item>
+          <el-descriptions-item label="学位期望">{{ profileDegreeText }}</el-descriptions-item>
+          <el-descriptions-item label="学习方式">{{ profileStudyText }}</el-descriptions-item>
+          <el-descriptions-item label="实力自评">{{ profileRatingText }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+
+      <el-form :inline="true" size="large" style="margin-top: 16px;">
         <el-form-item label="门类">
           <el-select
             v-model="selectedMldm"
@@ -74,6 +103,14 @@
 
     <!-- 推荐结果展示 -->
     <div v-if="hasResult" class="result-section">
+      <!-- 操作栏：导出 PDF 报告 -->
+      <div class="action-bar">
+        <el-button type="primary" :loading="exporting" @click="handleExportPdf">
+          <el-icon><Download /></el-icon>
+          一键生成择校报告 PDF
+        </el-button>
+      </div>
+
       <!-- 冲刺院校 -->
       <el-card shadow="never" class="tier-card tier-sprint">
         <template #header>
@@ -84,20 +121,20 @@
           </div>
           <p class="tier-desc">难度系数较高，需要付出更多努力的顶级院校</p>
         </template>
-        <recommend-list :items="result.sprint" @favorite="handleFavorite" />
+        <recommend-list :items="result.sprint" :favorited-set="favoritedSet" @favorite="handleFavorite" />
       </el-card>
 
       <!-- 稳妥院校 -->
       <el-card shadow="never" class="tier-card tier-stable">
         <template #header>
           <div class="tier-header">
-            <span class="tier-icon">✅</span>
+            <span class="tier-icon">🏅</span>
             <h3>稳妥院校</h3>
             <el-tag type="success" size="small">{{ result.stable.length }} 所</el-tag>
           </div>
           <p class="tier-desc">难度适中，与您的期望高度匹配的院校</p>
         </template>
-        <recommend-list :items="result.stable" @favorite="handleFavorite" />
+        <recommend-list :items="result.stable" :favorited-set="favoritedSet" @favorite="handleFavorite" />
       </el-card>
 
       <!-- 保底院校 -->
@@ -110,7 +147,7 @@
           </div>
           <p class="tier-desc">难度较低，专业匹配且录取把握较大的院校</p>
         </template>
-        <recommend-list :items="result.safe" @favorite="handleFavorite" />
+        <recommend-list :items="result.safe" :favorited-set="favoritedSet" @favorite="handleFavorite" />
       </el-card>
     </div>
   </div>
@@ -119,16 +156,22 @@
 <script setup lang="ts">
 /**
  * 智能推荐页面
+ * 已完成画像的用户，自动加载画像的意向门类作为默认选项；
  * 用户选择目标专业后，调用推荐算法接口，展示分梯度的推荐结果。
  */
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { MagicStick } from '@element-plus/icons-vue'
+import { MagicStick, QuestionFilled, Download } from '@element-plus/icons-vue'
 import type { CascadeOption, RecommendResponse, RecommendItem } from '@/types'
 import { getCategoriesApi, getDisciplinesApi, getMajorsApi } from '@/api/search'
 import { getRecommendationsApi } from '@/api/recommend'
-import { addFavoriteApi } from '@/api/workbench'
+import { addFavoriteApi, removeFavoriteApi, batchCheckFavoritesApi, checkFavoriteApi } from '@/api/workbench'
+import { generateReportApi } from '@/api/report'
+import { addOperationLogApi } from '@/api/oplog'
+import { useUserStore } from '@/stores/user'
 import RecommendList from '@/components/RecommendList.vue'
+
+const userStore = useUserStore()
 
 const categories = ref<CascadeOption[]>([])
 const disciplines = ref<CascadeOption[]>([])
@@ -139,12 +182,60 @@ const selectedYjxkdm = ref('')
 const selectedZydm = ref('')
 const loading = ref(false)
 const hasResult = ref(false)
+const profileLoaded = ref(false)
 
 const result = ref<RecommendResponse>({ sprint: [], stable: [], safe: [] })
+const favoritedSet = ref<Set<string>>(new Set())
+const exporting = ref(false)
+
+// 画像信息展示
+const profileProvincesText = computed(() => {
+  const p = userStore.userInfo?.target_provinces
+  return p && p.length > 0 ? p.join('、') : '未设置'
+})
+
+const profileDegreeText = computed(() => {
+  const d = userStore.userInfo?.degree_type
+  if (d === 'xs') return '学术学位'
+  if (d === 'zy') return '专业学位'
+  return d || '未设置'
+})
+
+const profileStudyText = computed(() => {
+  const s = userStore.userInfo?.study_mode
+  if (s === '1' || s === '全日制') return '全日制'
+  if (s === '2' || s === '非全日制') return '非全日制'
+  return s || '未设置'
+})
+
+const profileRatingText = computed(() => {
+  const r = userStore.userInfo?.self_rating
+  if (r === 'strong') return '强'
+  if (r === 'medium') return '中等'
+  if (r === 'weak') return '弱'
+  return r || '未设置'
+})
 
 onMounted(async () => {
-  const res = await getCategoriesApi()
-  categories.value = res.data
+  // 确保用户信息已加载
+  if (!userStore.userInfo) {
+    await userStore.fetchUserInfo()
+  }
+
+  const catRes = await getCategoriesApi()
+  categories.value = catRes.data
+
+  // 如果用户已完成画像且有意向门类，自动填充门类选择
+  if (userStore.userInfo?.profile_completed === 1 && userStore.userInfo.target_mldm) {
+    profileLoaded.value = true
+    const mldm = userStore.userInfo.target_mldm
+    selectedMldm.value = mldm
+    // 自动加载对应的一级学科
+    const discRes = await getDisciplinesApi(mldm)
+    disciplines.value = discRes.data
+  } else {
+    profileLoaded.value = true
+  }
 })
 
 async function onCategoryChange(val: string) {
@@ -187,6 +278,14 @@ async function handleRecommend() {
     ) {
       ElMessage.info('该专业暂无可推荐的院校数据')
     }
+
+    // 批量查询已收藏状态
+    try {
+      const favRes = await batchCheckFavoritesApi(selectedZydm.value)
+      favoritedSet.value = new Set(favRes.data.favorited_dwdm_list)
+    } catch {
+      favoritedSet.value = new Set()
+    }
   } catch {
     // 错误已在拦截器处理
   } finally {
@@ -194,18 +293,60 @@ async function handleRecommend() {
   }
 }
 
-/** 收藏推荐院校 */
+/** 收藏/取消收藏推荐院校 */
 async function handleFavorite(item: RecommendItem) {
+  const dwdm = item.dwdm || ''
+  if (favoritedSet.value.has(dwdm)) {
+    // 已收藏 → 取消收藏
+    try {
+      const { data } = await checkFavoriteApi(dwdm, selectedZydm.value)
+      if (data.favorite_id) {
+        await removeFavoriteApi(data.favorite_id)
+        favoritedSet.value.delete(dwdm)
+        favoritedSet.value = new Set(favoritedSet.value)
+        ElMessage.success('已取消收藏')
+      }
+    } catch {
+      // 已处理
+    }
+  } else {
+    // 未收藏 → 添加收藏
+    try {
+      await addFavoriteApi({
+        dwdm,
+        dwmc: item.dwmc || '',
+        zydm: selectedZydm.value,
+        zymc: '',
+      })
+      favoritedSet.value.add(dwdm)
+      favoritedSet.value = new Set(favoritedSet.value)
+      ElMessage.success('收藏成功')
+    } catch {
+      // 已处理
+    }
+  }
+}
+
+/** 一键导出 PDF 报告 */
+async function handleExportPdf() {
+  exporting.value = true
   try {
-    await addFavoriteApi({
-      dwdm: item.dwdm || '',
-      dwmc: item.dwmc,
-      zydm: selectedZydm.value,
-      zymc: '',
-    })
-    ElMessage.success('收藏成功')
+    const res = await generateReportApi(selectedZydm.value)
+    // 将 blob 下载为文件
+    const blob = new Blob([res.data], { type: 'application/pdf' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `考研择校报告_${selectedZydm.value}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+    ElMessage.success('报告已生成，开始下载')
+    // 记录操作日志
+    addOperationLogApi('export_pdf', JSON.stringify({ zydm: selectedZydm.value }))
   } catch {
-    // 已处理
+    ElMessage.error('报告生成失败，请稍后重试')
+  } finally {
+    exporting.value = false
   }
 }
 </script>
@@ -217,10 +358,27 @@ async function handleFavorite(item: RecommendItem) {
   gap: 16px;
 }
 
+.card-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
 .sub-title {
   font-size: 14px;
   color: #909399;
   margin-top: 4px;
+}
+
+.profile-summary {
+  background: #f5f7fa;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .result-section {

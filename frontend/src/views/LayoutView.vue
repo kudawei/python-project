@@ -14,6 +14,10 @@
         text-color="#bfcbd9"
         active-text-color="#409eff"
       >
+        <el-menu-item index="/dashboard">
+          <el-icon><DataBoard /></el-icon>
+          <span>数据看板</span>
+        </el-menu-item>
         <el-menu-item index="/search">
           <el-icon><Search /></el-icon>
           <span>多维检索</span>
@@ -26,14 +30,35 @@
           <el-icon><Star /></el-icon>
           <span>我的收藏</span>
         </el-menu-item>
+        <el-menu-item index="/recommend-history">
+          <el-icon><Clock /></el-icon>
+          <span>推荐历史</span>
+        </el-menu-item>
         <el-menu-item index="/compare">
           <el-icon><DataAnalysis /></el-icon>
           <span>院校对比</span>
+        </el-menu-item>
+        <el-menu-item index="/major-distribution">
+          <el-icon><MapLocation /></el-icon>
+          <span>专业分布</span>
         </el-menu-item>
         <el-menu-item index="/profile">
           <el-icon><User /></el-icon>
           <span>考研画像</span>
         </el-menu-item>
+        <el-menu-item index="/operation-log">
+          <el-icon><List /></el-icon>
+          <span>操作日志</span>
+        </el-menu-item>
+        <el-sub-menu index="data">
+          <template #title>
+            <el-icon><FolderOpened /></el-icon>
+            <span>支撑数据</span>
+          </template>
+          <el-menu-item index="/data/major">专业信息表</el-menu-item>
+          <el-menu-item index="/data/major-university">专业-院校关联表</el-menu-item>
+          <el-menu-item index="/data/major-detail">研究方向详情表</el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 
@@ -81,6 +106,11 @@ import {
   User,
   ArrowDown,
   School,
+  DataBoard,
+  FolderOpened,
+  Clock,
+  MapLocation,
+  List,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 

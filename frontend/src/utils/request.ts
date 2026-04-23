@@ -6,9 +6,13 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
-/** 创建 axios 实例，设置后端 API 基础地址 */
+/**
+ * 创建 axios 实例
+ * baseURL 设置为 '/api'，开发环境下由 Vite 代理转发到后端，
+ * 避免跨域（CORS）问题。
+ */
 const request = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: '/api',
   timeout: 15000,
 })
 

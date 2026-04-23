@@ -5,7 +5,7 @@
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import distinct
+from sqlalchemy import distinct, or_
 from typing import Optional
 
 from app.core.database import get_db
@@ -103,17 +103,17 @@ def search_universities(
         if province_list:
             query = query.filter(MajorUniversity.szss.in_(province_list))
 
-    # 特性过滤：仅看双一流
+    # 特性过滤：仅看双一流（兼容 '是' 和 '1' 两种取值）
     if syl:
-        query = query.filter(MajorUniversity.syl == "是")
+        query = query.filter(or_(MajorUniversity.syl == "是", MajorUniversity.syl == "1"))
 
     # 特性过滤：仅看自划线
     if zhx:
-        query = query.filter(MajorUniversity.zhx == "是")
+        query = query.filter(or_(MajorUniversity.zhx == "是", MajorUniversity.zhx == "1"))
 
     # 特性过滤：仅看有博士点
     if bs:
-        query = query.filter(MajorUniversity.bs == "是")
+        query = query.filter(or_(MajorUniversity.bs == "是", MajorUniversity.bs == "1"))
 
     # 学习方式过滤
     if xxfs:
