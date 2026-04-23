@@ -288,8 +288,12 @@ onMounted(async () => {
     const provEnroll = provEnrollRes.data
     provinceEnrollOption.value = barOption(provEnroll.categories, provEnroll.values, '#fac858', provEnroll.categories.length > 15)
 
-    // 图表8：推免占比 TOP15
+    // 图表8：推免占比 TOP15（横向条形图，避免院校名称过长被截断）
     const tm = tuimianRes.data
+    const tmCats = [...tm.categories].reverse()
+    const tmTotals = [...tm.total_values].reverse()
+    const tmTuimian = [...tm.tuimian_values].reverse()
+    const tmRatios = [...tm.ratio_values].reverse()
     tuimianOption.value = {
       tooltip: {
         trigger: 'axis',
@@ -297,17 +301,17 @@ onMounted(async () => {
           let s = params[0].name + '<br/>'
           for (const p of params) s += `${p.marker} ${p.seriesName}: ${p.value}<br/>`
           const idx = params[0].dataIndex
-          s += `推免占比: ${tm.ratio_values[idx]}%`
+          s += `推免占比: ${tmRatios[idx]}%`
           return s
         },
       },
       legend: { bottom: 0 },
-      grid: { left: '3%', right: '4%', bottom: '12%', containLabel: true },
-      xAxis: { type: 'category', data: tm.categories, axisLabel: { rotate: 40, fontSize: 10 } },
-      yAxis: { type: 'value', name: '人数' },
+      grid: { left: '30%', right: '6%', bottom: '10%', containLabel: false },
+      yAxis: { type: 'category', data: tmCats, axisLabel: { fontSize: 11 } },
+      xAxis: { type: 'value', name: '人数' },
       series: [
-        { name: '拟招生人数', type: 'bar', data: tm.total_values, itemStyle: { color: '#5470c6' } },
-        { name: '推免人数', type: 'bar', data: tm.tuimian_values, itemStyle: { color: '#ee6666' } },
+        { name: '拟招生人数', type: 'bar', data: tmTotals, itemStyle: { color: '#5470c6' }, barMaxWidth: 14 },
+        { name: '推免人数', type: 'bar', data: tmTuimian, itemStyle: { color: '#ee6666' }, barMaxWidth: 14 },
       ],
     }
 
