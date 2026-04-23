@@ -66,8 +66,8 @@ def generate_report(
     """
     font_name = _register_chinese_font()
 
-    # 执行推荐算法获取结果
-    result = calculate_recommendation(db=db, user=current_user, zydm=zydm)
+    # 执行推荐算法获取结果（不保存日志，避免重复记录）
+    result = calculate_recommendation(db=db, user=current_user, zydm=zydm, save_log=False)
 
     # 构建画像信息
     province_str = current_user.target_provinces or "未设置"
@@ -109,7 +109,7 @@ def generate_report(
     elements.append(Paragraph("一、用户画像", h2_style))
     profile_data = [
         ["项目", "内容"],
-        ["意向门类", current_user.target_category or "未设置"],
+        ["意向门类", current_user.target_mlmc or "未设置"],
         ["意向省市", province_str],
         ["学位期望", degree_label],
         ["学习方式", study_label],

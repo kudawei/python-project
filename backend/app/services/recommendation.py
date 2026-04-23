@@ -37,6 +37,7 @@ def calculate_recommendation(
     db: Session,
     user: User,
     zydm: str,
+    save_log: bool = True,
 ) -> dict:
     """
     核心推荐算法函数
@@ -166,22 +167,23 @@ def calculate_recommendation(
         }
         result[row["tier"]].append(item)
 
-    # ========== 第八步：保存推荐记录到数据库 ==========
-    for tier_name, items in result.items():
-        for item in items:
-            log = RecommendLog(
-                user_id=user.id,
-                zydm=zydm,
-                dwdm=item["dwdm"] or "",
-                dwmc=item["dwmc"],
-                score=item["score"],
-                tier=tier_name,
-                request_params=json.dumps(
-                    {"zydm": zydm, "self_rating": self_rating},
-                    ensure_ascii=False,
-                ),
-            )
-            db.add(log)
-    db.commit()
+    # ========== 第八步：保存推荐记录到数据库（可选） ==========
+    if save_log:
+        for tier_name, items in result.items():
+            for item in items:
+                log = RecommendLog(
+                    user_id=user.id,
+                    zydm=zydm,
+                    dwdm=item["dwdm"] or "",
+                    dwmc=item["dwmc"],
+                    score=item["score"],
+                    tier=tier_name,
+                    request_params=json.dumps(
+                        {"zydm": zydm, "self_rating": self_rating},
+                        ensure_ascii=False,
+                    ),
+                )
+                db.add(log)
+        db.commit()
 
     return result
